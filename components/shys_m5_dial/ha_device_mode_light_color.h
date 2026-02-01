@@ -92,13 +92,18 @@ namespace esphome
                     gfx->setTextDatum(middle_center);
 
                     gfx->startWrite();                    // Secure SPI bus
+                    // glossy center circle using two layers
                     gfx->fillCircle(width/2, height/2, 70, getColorByDegree(currentValue));
+                    gfx->fillCircle(width/2, height/2, 50, M5Dial.Display.color565(255,255,255));
+                    gfx->fillCircle(width/2, height/2, 48, getColorByDegree(currentValue));
 
+                    // current value text
                     display.setFontsize(1);
                     gfx->drawString(String(currentValue),
                                     width / 2,
                                     height / 2 - 20);
 
+                    // labels
                     display.setFontsize(1);
                     gfx->drawString(this->device.getName().c_str(),
                                     width / 2,
@@ -107,7 +112,10 @@ namespace esphome
                                     width / 2,
                                     height / 2 + 50);  
 
-                    display.drawColorCircleLine(360-currentValue, 40, 69, complementary_color);
+                    // pointer highlight: draw a small 8° arc with higher contrast
+                    for (int off=-3; off<=3; ++off){
+                        display.drawColorCircleLine(360-(currentValue+off+360)%360, 40, 69, complementary_color);
+                    }
                     gfx->endWrite();                      // Release SPI bus
                 }
 

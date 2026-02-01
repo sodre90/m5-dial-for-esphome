@@ -119,16 +119,27 @@ namespace esphome
                     LovyanGFX* gfx = display.getGfx();
 
                     int currentValue = getValue();
-                    uint32_t complementary_color = M5Dial.Display.color888(255,0,0);
 
                     int height = gfx->height();
                     int width  = gfx->width();
 
-                    gfx->setTextColor(complementary_color);
+                    // choose contrasting text color based on current background (perceived luminance)
+                    uint32_t col888 = colorTemperatureToRGB888(currentValue);
+                    uint8_t r = (col888 >> 16) & 0xFF;
+                    uint8_t g = (col888 >> 8) & 0xFF;
+                    uint8_t b = (col888) & 0xFF;
+                    float luminance = 0.2126f*r + 0.7152f*g + 0.0722f*b;
+                    uint16_t textColor = (luminance > 140.0f) ? BLACK : WHITE;
+
+                    gfx->setTextColor(textColor);
                     gfx->setTextDatum(middle_center);
 
                     gfx->startWrite();                    // Secure SPI bus
-                    gfx->fillCircle(width/2, height/2, 70, colorTemperatureToRGB(currentValue));
+                    // glossy center circle using layered fills for subtle depth
+                    uint16_t base565 = colorTemperatureToRGB(currentValue);
+                    gfx->fillCircle(width/2, height/2, 70, base565);
+                    gfx->fillCircle(width/2, height/2, 50, M5Dial.Display.color565(255,255,255));
+                    gfx->fillCircle(width/2, height/2, 48, base565);
 
                     display.setFontsize(1);
                     gfx->drawString(String(currentValue),
@@ -144,7 +155,10 @@ namespace esphome
                                     height / 2 + 50);  
 
                     float temp = map(currentValue, this->minValue, this->maxValue, 360, 0);
-                    display.drawColorCircleLine(temp, 40, 69, complementary_color);
+                    // draw a slightly thicker pointer arc for current temperature
+                    for(int off=-3; off<=3; ++off){
+                        display.drawColorCircleLine(temp+off, 40, 69, textColor);
+                    }
                     gfx->endWrite();                      // Release SPI bus
                 }
 
