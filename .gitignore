@@ -1,0 +1,4 @@
+__pycache__/
+.esphome/
+.idea/
+secrets.yaml

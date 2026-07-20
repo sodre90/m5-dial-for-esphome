@@ -1,0 +1,126 @@
+esphome:
+  name: m5-dial-test
+  name_add_mac_suffix: false
+  project:
+    name: smarthomeyourself.m5_dial
+    version: "1.1"
+
+  platformio_options:
+    lib_deps:
+      - Wire
+      - EEPROM
+      - ArduinoJson
+      - m5stack/M5Unified@0.1.14
+      - m5stack/M5Dial@1.0.2
+      # M5GFX >=0.2.7 ships EPD panel code needing IDF's esp_lcd headers,
+      # which ESPHome's arduino build does not expose
+      - m5stack/M5GFX@0.2.6
+
+external_components:
+  - source:
+      type: local
+      path: ../components
+    components: [shys_m5_dial]
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: arduino
+  flash_size: 8MB
+
+logger:
+  level: INFO
+
+api:
+  homeassistant_states: true
+  homeassistant_services: true
+  custom_services: true
+
+ota:
+  platform: esphome
+
+wifi:
+  ssid: "dummy-ssid"
+  password: "dummy-password"
+  ap:
+    password: "12345678"
+
+time:
+  - platform: homeassistant
+    id: ha_time
+
+shys_m5_dial:
+  time_component: ha_time
+  screen_off_time: 30000
+  long_press_duration: 1200
+  send_value_delay: 1200
+  send_value_lock: 3000
+  rotary_step_width: 10
+  font: default
+  screensaver: clock
+  devices:
+    lights:
+      - entity: light.test_light
+        name: "Test Light"
+        modes:
+          dimm_mode:
+            enable: true
+          white_mode:
+            enable: true
+          rgb_mode:
+            enable: true
+    climates:
+      - entity: climate.test_climate
+        name: "Test Climate"
+        modes:
+          temp_mode:
+            min_temperature: 5
+            max_temperature: 30
+          fan_mode:
+            modes:
+              - "auto"
+              - "low"
+              - "high"
+    covers:
+      - entity: cover.test_cover
+        name: "Test Cover"
+    switches:
+      - entity: switch.test_switch
+        name: "Test Switch"
+    fans:
+      - entity: fan.test_fan
+        name: "Test Fan"
+        modes:
+          speed_mode:
+            changeable_direction: true
+    media_player:
+      - entity: media_player.test_player
+        name: "Test Player"
+        modes:
+          source_mode:
+            sources:
+              - name: "Radio"
+                content_id: "x"
+                content_type: "music"
+    lock:
+      - entity: lock.test_lock
+        name: "Test Lock"
+        modes:
+          lock_mode:
+            open_on_button: true
+    number:
+      - entity: number.test_number
+        name: "Test Number"
+        modes:
+          value_mode:
+            unit: "%"
+    timer:
+      - entity: timer.test_timer
+        name: "Test Timer"
+    scenes:
+      - entity: scene.movie_night
+        name: "Movie Night"
+      - entity: script.good_morning
+        name: "Morning"
+      - entity: scene.relax
+        name: "Relax"

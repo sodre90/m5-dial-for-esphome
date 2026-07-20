@@ -17,6 +17,9 @@ esphome:
       - ArduinoJson
       - m5stack/M5Unified@0.1.14
       - m5stack/M5Dial@1.0.2
+      # M5GFX >=0.2.7 ships EPD panel code needing IDF's esp_lcd headers,
+      # which ESPHome's arduino build does not expose
+      - m5stack/M5GFX@0.2.6
 
 
 external_components:
