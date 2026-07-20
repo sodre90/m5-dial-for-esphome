@@ -59,6 +59,7 @@ namespace esphome
                                         width / 2,
                                         height / 2 - 15);
 
+                        gfx->setTextColor(M5DialDisplay::THEME_TEXT_MUTED);
                         display.setFontsize(1);
                         gfx->drawString(this->device.getName().c_str(),
                                         width / 2,
@@ -71,7 +72,7 @@ namespace esphome
                                         width / 2,
                                         height / 2 + 15);
 
-                        display.drawLayeredButton(width/2, height/2+65, 45, this->isLocked() ? RED : DARKGREEN);
+                        display.drawLayeredButton(width/2, height/2+65, 45, this->isLocked() ? M5DialDisplay::THEME_DANGER : M5DialDisplay::THEME_GOOD);
                         display.drawBitmapTransparent(DOOR_OPEN_IMG, width/2-35, height/2+30, 70, 70, 0xFFFF);
                         display.setFontsize(.7);
                         gfx->drawString("Open",

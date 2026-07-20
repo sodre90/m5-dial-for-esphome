@@ -44,6 +44,7 @@ namespace esphome
                                                     const char* footerLabel){
             drawMenuFrame(display, display.getBackgroundColor(),
                           [this, &display, &items, footerLabel](LovyanGFX* gfx, uint16_t width, uint16_t height){
+                gfx->setTextColor(M5DialDisplay::THEME_TEXT_MUTED);
                 display.setFontsize(1);
                 gfx->drawString(this->device.getName().c_str(),
                                 width / 2,
@@ -66,10 +67,12 @@ namespace esphome
                                     height / 2 - 40);
                 }
 
+                gfx->setTextColor(display.getAccentColor());
                 display.setFontsize(1.5);
                 gfx->drawString(items[current].c_str(),
                                 width / 2,
                                 height / 2);
+                gfx->setTextColor(M5DialDisplay::THEME_TEXT_MUTED);
 
                 if(current < (int)items.size() - 1){
                     display.setFontsize(.7);

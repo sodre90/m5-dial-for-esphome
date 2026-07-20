@@ -189,6 +189,7 @@ namespace esphome
                         tmp = this->duration;
                     }
 
+                    gfx->setTextColor(M5DialDisplay::getContrastColor(M5DialDisplay::THEME_BG));
                     display.setFontsize(1.5);
                     gfx->drawString(tmp.c_str(),
                                     width / 2,
@@ -196,6 +197,7 @@ namespace esphome
 
 
                     if(this->timeToChange != 0){
+                        gfx->setTextColor(display.getAccentColor());
                         display.setFontsize(1.2);
                         gfx->drawString(this->getTimeString(this->timeToChange).c_str(),
                                         width / 2,

@@ -29,7 +29,7 @@ namespace esphome
                                         100,
                                         150,
                                         valOnArc,
-                                        RED
+                                        display.getAccentColor()
                                         );
 
                             gfx->fillArc(width / 2,
@@ -38,7 +38,7 @@ namespace esphome
                                         100,
                                         valOnArc,
                                         390,
-                                        ORANGE
+                                        M5DialDisplay::THEME_TRACK
                                         );
                         } else {
                             gfx->fillArc(width / 2,
@@ -58,6 +58,7 @@ namespace esphome
                                         height / 2 - 70);
 
                         // Mode
+                        gfx->setTextColor(M5DialDisplay::THEME_TEXT_MUTED);
                         display.setFontsize(1);
                         gfx->drawString(this->label.c_str(),
                                         width / 2,

@@ -85,7 +85,7 @@ namespace esphome
                     }
 
                     int degree = 180 - (second * 360 / 60);
-                    paintHand(display, degree, 1, 105, RED);
+                    paintHand(display, degree, 1, 105, display.getAccentColor());
 
                     lastSec = second;
                 }

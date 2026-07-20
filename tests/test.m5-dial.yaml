@@ -58,6 +58,7 @@ shys_m5_dial:
   rotary_step_width: 10
   font: default
   screensaver: clock
+  accent_color: "#00B0FF"
   devices:
     lights:
       - entity: light.test_light

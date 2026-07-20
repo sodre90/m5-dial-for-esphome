@@ -85,6 +85,10 @@ namespace esphome
         if(forceRefresh || isDisplayRefreshNeeded()){
             devices[currentDevice]->refreshDisplay(*m5DialDisplay, lastDisplayDevice != currentDevice);
 
+            if(!m5DialDisplay->isScreensaverRunning()){
+              m5DialDisplay->commit();
+            }
+
             lastDisplayDevice  = currentDevice;
             lastModeIndex      = devices[currentDevice]->getCurrentModeIndex();
             lastDisplayValue   = getCurrentValue();
@@ -202,6 +206,11 @@ namespace esphome
       void setDisplayRotation(int value){
         ESP_LOGI("DEVICE", "setDisplayRotation %i", value);
         m5DialDisplay->setRotation(value);
+      }
+
+      void setAccentColor(int value){
+        ESP_LOGI("DEVICE", "setAccentColor 0x%04X", value);
+        m5DialDisplay->setAccentColor(value);
       }
 
       void setScreensaver(std::string value){

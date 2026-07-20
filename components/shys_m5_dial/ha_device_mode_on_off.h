@@ -19,40 +19,26 @@ namespace esphome
                     }
                 }
 
-                void drawVignetteBackground(M5DialDisplay& display, uint16_t base){
-                    uint16_t cx = display.getWidth()/2;
-                    uint16_t cy = display.getHeight()/2;
-
-                    uint16_t darker    = M5DialDisplay::blendColor(base, BLACK, 0.35f);
-                    uint16_t mid       = M5DialDisplay::blendColor(base, BLACK, 0.18f);
-                    uint16_t highlight = M5DialDisplay::blendColor(base, WHITE, 0.08f);
-
-                    M5Dial.Display.fillCircle(cx, cy, 120, darker);
-                    M5Dial.Display.fillCircle(cx, cy, 100, mid);
-                    M5Dial.Display.fillCircle(cx, cy, 78, base);
-                    M5Dial.Display.fillCircle(cx, cy, 56, highlight);
-                }
-
-                void drawStateRing(M5DialDisplay& display, bool is_on){
-                    uint16_t ring_color = is_on ? M5Dial.Display.color565(255,255,255) : M5Dial.Display.color565(255,80,80);
+                void drawStateRing(M5DialDisplay& display, uint16_t ringColor){
                     for(int i=0;i<360;i+=2){
-                        display.drawColorCircleLine(i, 130, 134, ring_color);
+                        display.drawColorCircleLine(i, 130, 134, ringColor);
                     }
                 }
 
                 void showOnOffMenu(M5DialDisplay& display){
                     bool isOn = getValue() > 0;
-                    uint16_t base = isOn ? YELLOW : RED;
+                    uint16_t accent = display.getAccentColor();
 
-                    drawMenuFrame(display, base, [this, &display, base, isOn](LovyanGFX* gfx, uint16_t width, uint16_t height){
-                        drawVignetteBackground(display, base);
-                        drawStateRing(display, isOn);
+                    drawMenuFrame(display, M5DialDisplay::THEME_BG, [this, &display, accent, isOn](LovyanGFX* gfx, uint16_t width, uint16_t height){
+                        drawStateRing(display, isOn ? accent : M5DialDisplay::THEME_TRACK);
 
+                        gfx->setTextColor(isOn ? accent : M5DialDisplay::THEME_TEXT_MUTED);
                         display.setFontsize(3);
                         gfx->drawString(isOn?"on":"off",
                                         width / 2,
                                         height / 2 - 30);
 
+                        gfx->setTextColor(M5DialDisplay::THEME_TEXT_MUTED);
                         display.setFontsize(1);
                         gfx->drawString(this->device.getName().c_str(),
                                         width / 2,

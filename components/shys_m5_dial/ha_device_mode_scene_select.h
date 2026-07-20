@@ -46,13 +46,13 @@ namespace esphome
                         uint16_t cy = height / 2;
 
                         if(this->scenes.empty()){
+                            gfx->setTextColor(M5DialDisplay::THEME_TEXT_MUTED);
                             display.setFontsize(1);
                             gfx->drawString("No scenes", cx, cy);
                             return;
                         }
 
                         int selected = this->getValue();
-                        uint16_t backgroundContrast = M5DialDisplay::getContrastColor(display.getBackgroundColor());
 
                         for(int i = 0; i < (int)this->scenes.size(); i++){
                             const SceneEntry& scene = this->scenes[i];
@@ -62,7 +62,7 @@ namespace esphome
 
                             display.drawLayeredButton(x, y, radius, scene.color);
                             if(i == selected){
-                                gfx->drawCircle(x, y, radius + 3, backgroundContrast);
+                                gfx->drawCircle(x, y, radius + 3, display.getAccentColor());
                             }
 
                             display.setFontsize(1);
@@ -70,7 +70,7 @@ namespace esphome
                             gfx->drawString(scene.name.substr(0, 1).c_str(), x, y);
                         }
 
-                        gfx->setTextColor(backgroundContrast);
+                        gfx->setTextColor(M5DialDisplay::getContrastColor(display.getBackgroundColor()));
                         display.setFontsize(1);
                         gfx->drawString(this->scenes[selected].name.c_str(), cx, cy);
                     });

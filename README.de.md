@@ -59,6 +59,7 @@ shys_m5_dial:
   long_press_duration: 1200
   font: default
   font_factor: 1
+  accent_color: "#FFB300"
 
   display_rotate: 2
   
@@ -223,6 +224,7 @@ shys_m5_dial:
   longPressDuration: 1200
   font: default
   font_factor: 1  
+  accent_color: "#FFB300"
   display_rotate: 2
 ```
   
@@ -256,6 +258,10 @@ Die alternativen Schriftarten unterstützen allerdings keine Umlaute und Sonderz
 **font_factor (optional)** *(Default: 1)*  
 Gibt den Faktor an, der auf die Schriftgröße angewendet werden soll.  
 *Gültige Werte: 0.1 - 10.0*
+  
+**accent_color (optional)** *(Default: "#FFB300")*  
+Legt die Akzentfarbe des dunklen UI-Themes fest (Wertebögen, ausgewählte Einträge, aktive Zustände).  
+*Format: "#RRGGBB"*
   
 **display_rotate (optional)** *(Default: 0)*  
 Gibt an, wie oft das Display um 90° gedreht werden soll.  

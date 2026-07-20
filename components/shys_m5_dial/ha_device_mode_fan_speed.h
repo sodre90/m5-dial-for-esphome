@@ -38,7 +38,7 @@ namespace esphome
                                      100,
                                      150,
                                      390,
-                                     ORANGE
+                                     M5DialDisplay::THEME_TRACK
                                     );
 
                         if(strcmp(this->direction, FAN_DIRECTION_FORWARD) == 0){
@@ -48,7 +48,7 @@ namespace esphome
                                          100,
                                          270,
                                          getValue()==0?270:(((float)120 / this->getMaxValue()) * getValue()) + 270,
-                                         RED
+                                         display.getAccentColor()
                                         );
                         } else {
                             gfx->fillArc(width / 2,
@@ -57,7 +57,7 @@ namespace esphome
                                          100,
                                          getValue()==0?270:270 - (((float)120 / this->getMaxValue()) * getValue()),
                                          270,
-                                         RED
+                                         display.getAccentColor()
                                         );
                         }
 
@@ -68,6 +68,7 @@ namespace esphome
                                         height / 2 - 70);
 
                         // Direction
+                        gfx->setTextColor(M5DialDisplay::THEME_TEXT_MUTED);
                         display.setFontsize(1);
                         gfx->drawString(this->direction,
                                         width / 2,
@@ -133,10 +134,11 @@ namespace esphome
                     }
                     
                     // State
+                    display.getGfx()->setTextColor(this->stateIsOn ? display.getAccentColor() : M5DialDisplay::THEME_TEXT_MUTED);
                     display.setFontsize(1);
                     display.getGfx()->drawString(this->stateIsOn?"On":"Off",
                                                  display.getGfx()->width() / 2,
-                                                 display.getGfx()->height() / 2 + 50);  
+                                                 display.getGfx()->height() / 2 + 50);
 
                     this->displayRefreshNeeded = false;
                 }

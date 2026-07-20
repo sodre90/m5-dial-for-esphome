@@ -24,6 +24,7 @@ CONF_SEND_VALUE_LOCK                  = "send_value_lock"
 CONF_ROTARY_STEP_WIDTH                = "rotary_step_width"
 CONF_FONT                             = "font"
 CONF_FONT_FACTOR                      = "font_factor"
+CONF_ACCENT_COLOR                     = "accent_color"
 
 CONF_DISPLAY_ROTATE                   = "display_rotate"
 
@@ -105,6 +106,17 @@ CONF_DEVICE_SCENES                    = "scenes"
 MAX_SCENES                            = 8
 
 
+def hex_color_to_rgb565(value):
+    value = cv.string(value).strip()
+    try:
+        if not value.startswith("#") or len(value) != 7:
+            raise ValueError
+        r, g, b = (int(value[i:i + 2], 16) for i in (1, 3, 5))
+    except ValueError:
+        raise cv.Invalid(f"Expected a color in #RRGGBB format, got '{value}'")
+    return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
+
+
 def validate_scene_entity(value):
     value = cv.string(value)
     if not value.startswith("scene.") and not value.startswith("script."):
@@ -126,6 +138,7 @@ DEFAULT_SEND_VALUE_LOCK                = 3000
 DEFAULT_ROTARY_STEP_WIDTH              = 10
 DEFAULT_FONT                           = "default"    #"FreeSans12pt7b"
 DEFAULT_FONT_FACTOR                    = 1
+DEFAULT_ACCENT_COLOR                   = "#FFB300"
 DEFAULT_WHITE_MIN_KELVIN               = 2000
 DEFAULT_WHITE_MAX_KELVIN               = 6500
 DEFAULT_WHITE_MIN_TEMP                 = 4
@@ -159,6 +172,7 @@ CONFIG_SCHEMA = cv.Schema({
     cv.Optional(CONF_ROTARY_STEP_WIDTH, default=DEFAULT_ROTARY_STEP_WIDTH): cv.int_range(0, 100),
     cv.Optional(CONF_FONT, default=DEFAULT_FONT): cv.string,
     cv.Optional(CONF_FONT_FACTOR, default=DEFAULT_FONT_FACTOR): cv.float_range(0.1, 10.0),
+    cv.Optional(CONF_ACCENT_COLOR, default=DEFAULT_ACCENT_COLOR): hex_color_to_rgb565,
     cv.Optional(CONF_DISPLAY_ROTATE, default=DEFAULT_CONF_DISPLAY_ROTATE): cv.int_range(0, 7),
     
     cv.Required(CONF_TIME_COMPONENT): cv.use_id(time),
@@ -353,6 +367,9 @@ async def to_code(config):
     if CONF_FONT_FACTOR in config:
         fontfactor = config[CONF_FONT_FACTOR]
         cg.add(var.setFontFactor(fontfactor))
+
+    if CONF_ACCENT_COLOR in config:
+        cg.add(var.setAccentColor(config[CONF_ACCENT_COLOR]))
 
     if CONF_DISPLAY_ROTATE in config:
         displayRotate = config[CONF_DISPLAY_ROTATE]
