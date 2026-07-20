@@ -205,7 +205,7 @@ namespace esphome
       }
 
       void setScreensaver(std::string value){
-        ESP_LOGI("DEVICE", "setScreensaver %s", value);
+        ESP_LOGI("DEVICE", "setScreensaver %s", value.c_str());
 
         if(strcmp(value.c_str(), "clock") == 0){
           m5DialDisplay->setScreensaver(new ScreensaverClock());
