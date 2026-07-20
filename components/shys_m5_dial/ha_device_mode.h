@@ -5,6 +5,10 @@
 #include "m5dial_display.h"
 #include "M5Dial.h"
 
+#include <functional>
+#include <string>
+#include <vector>
+
 namespace esphome
 {
     namespace shys_m5_dial
@@ -169,6 +173,33 @@ namespace esphome
                 }
 
                 virtual void sendValueToHomeAssistant(int value) = 0;
+
+                // Subscribes to a HA state/attribute; skips updates while a locally
+                // modified value is pending, so the dial does not fight the user.
+                // Defined in ha_device_mode_impl.h (needs the complete HaDevice type).
+                void subscribeHaState(optional<std::string> attribute,
+                                      std::function<void(const std::string&)> handler,
+                                      bool skipWhenModified = true);
+
+                void subscribeHaNumericState(optional<std::string> attribute,
+                                             const char* valueName,
+                                             std::function<void(float)> apply);
+
+                void drawSelectionMenu(M5DialDisplay& display,
+                                       const std::vector<std::string>& items,
+                                       const char* footerLabel);
+
+                void drawMenuFrame(M5DialDisplay& display, uint16_t bgColor,
+                                   const std::function<void(LovyanGFX*, uint16_t, uint16_t)>& body){
+                    LovyanGFX* gfx = display.getGfx();
+                    gfx->setTextColor(M5DialDisplay::getContrastColor(bgColor));
+                    gfx->setTextDatum(middle_center);
+
+                    gfx->startWrite();                      // Secure SPI bus
+                    display.clear(bgColor);
+                    body(gfx, gfx->width(), gfx->height());
+                    gfx->endWrite();                        // Release SPI bus
+                }
 
             public:
                 HaDeviceMode(HaDevice& device) : device(device) {}

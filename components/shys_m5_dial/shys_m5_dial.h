@@ -111,7 +111,7 @@ namespace esphome
       */
       void addDevice(HaDevice* device){
         if (device != nullptr) {
-          if(this->deviceAnzahl >= MAX_DEVICE_COUNT-1){
+          if(this->deviceAnzahl >= MAX_DEVICE_COUNT){
             ESP_LOGE("DEVICE", "EXCEED DEVICE COUNT MAXIMUM: %s can not be added!", device->getName().c_str());
             return;
           }
@@ -189,7 +189,7 @@ namespace esphome
       }
 
       void setFontName(std::string value){
-        ESP_LOGI("DEVICE", "setFontName %s", value);
+        ESP_LOGI("DEVICE", "setFontName %s", value.c_str());
         m5DialDisplay->setFontName(value);
       }
 
@@ -292,7 +292,7 @@ namespace esphome
 
 
      /**
-      * 
+      *
       */
       void addTimer(const std::string& entity_id, const std::string& name, const std::string& modes){
         HaDeviceTimer* timer = new HaDeviceTimer(entity_id, name, modes);

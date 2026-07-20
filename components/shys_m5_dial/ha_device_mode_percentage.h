@@ -16,75 +16,64 @@ namespace esphome
 
 
                 void showPercentageMenu(M5DialDisplay& display){
-                    LovyanGFX* gfx = display.getGfx();
+                    drawMenuFrame(display, display.getBackgroundColor(),
+                                  [this, &display](LovyanGFX* gfx, uint16_t width, uint16_t height){
 
-                    uint16_t height = gfx->height();
-                    uint16_t width  = gfx->width();
+                        float valOnArc = (getMaxValue()==0?240:((float)240 / (this->getMaxValue() - this->getMinValue())) * (getValue() - this->getMinValue())) + 150;
 
-                    gfx->setTextColor(MAROON);
-                    gfx->setTextDatum(middle_center);
+                        if(this->isBarActive()){
+                            // Round %-Bar
+                            gfx->fillArc(width / 2,
+                                        height / 2,
+                                        115,
+                                        100,
+                                        150,
+                                        valOnArc,
+                                        RED
+                                        );
 
-                    gfx->startWrite();                      // Secure SPI bus
+                            gfx->fillArc(width / 2,
+                                        height / 2,
+                                        115,
+                                        100,
+                                        valOnArc,
+                                        390,
+                                        ORANGE
+                                        );
+                        } else {
+                            gfx->fillArc(width / 2,
+                                        height / 2,
+                                        115,
+                                        100,
+                                        150,
+                                        390,
+                                        display.getBackgroundColor()
+                                        );
+                        }
 
-                    display.clear();
+                        // Percent
+                        display.setFontsize(1.7);
+                        gfx->drawString(use_custom_value ? custom_value.c_str() : (String(getValue()) + this->unit.c_str()).c_str(),
+                                        width / 2,
+                                        height / 2 - 70);
 
-                    float valOnArc = (getMaxValue()==0?240:((float)240 / (this->getMaxValue() - this->getMinValue())) * (getValue() - this->getMinValue())) + 150;
+                        // Mode
+                        display.setFontsize(1);
+                        gfx->drawString(this->label.c_str(),
+                                        width / 2,
+                                        height / 2 - 40);
 
-                    if(this->isBarActive()){
-                        // Round %-Bar
-                        gfx->fillArc(width / 2,
-                                    height / 2,
-                                    115,
-                                    100,
-                                    150,
-                                    valOnArc,
-                                    RED
-                                    );
+                        // Icon
+                        if(this->icon != nullptr){
+                            display.drawBitmapTransparent(this->icon, width/2-35, height/2-30, 70, 70, 0xFFFF);
+                        }
 
-                        gfx->fillArc(width / 2,
-                                    height / 2,
-                                    115,
-                                    100,
-                                    valOnArc,
-                                    390,
-                                    ORANGE
-                                    );
-                    } else {
-                        gfx->fillArc(width / 2,
-                                    height / 2,
-                                    115,
-                                    100,
-                                    150,
-                                    390,
-                                    display.getBackgroundColor()
-                                    );
-                    }
-
-                    // Percent
-                    display.setFontsize(1.7);
-                    gfx->drawString(use_custom_value ? custom_value.c_str() : (String(getValue()) + this->unit.c_str()).c_str(),
-                                    width / 2,
-                                    height / 2 - 70);
-
-                    // Mode
-                    display.setFontsize(1);
-                    gfx->drawString(this->label.c_str(),
-                                    width / 2,
-                                    height / 2 - 40);  
-
-                    // Icon
-                    if(this->icon != nullptr){
-                        display.drawBitmapTransparent(this->icon, width/2-35, height/2-30, 70, 70, 0xFFFF);
-                    }
-
-                    // Device Name
-                    display.setFontsize(1);
-                    gfx->drawString(this->device.getName().c_str(),
-                                    width / 2,
-                                    height / 2 + 90);
- 
-
-                    gfx->endWrite();                      // Release SPI bus
+                        // Device Name
+                        display.setFontsize(1);
+                        gfx->drawString(this->device.getName().c_str(),
+                                        width / 2,
+                                        height / 2 + 90);
+                    });
                 }
 
             public:

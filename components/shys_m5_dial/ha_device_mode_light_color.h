@@ -91,11 +91,13 @@ namespace esphome
                     gfx->setTextColor(complementary_color);
                     gfx->setTextDatum(middle_center);
 
+                    uint32_t base888 = getColorByDegree(currentValue);
+                    uint16_t base565 = M5Dial.Display.color565((base888 >> 16) & 0xFF,
+                                                               (base888 >> 8) & 0xFF,
+                                                               base888 & 0xFF);
+
                     gfx->startWrite();                    // Secure SPI bus
-                    // glossy center circle using two layers
-                    gfx->fillCircle(width/2, height/2, 70, getColorByDegree(currentValue));
-                    gfx->fillCircle(width/2, height/2, 50, M5Dial.Display.color565(255,255,255));
-                    gfx->fillCircle(width/2, height/2, 48, getColorByDegree(currentValue));
+                    display.drawLayeredButton(width/2, height/2, 70, base565);
 
                     // current value text
                     display.setFontsize(1);
@@ -158,19 +160,10 @@ namespace esphome
                 }
 
                 void registerHAListener() override {
-                    std::string attrName = "hs_color";
-                    api::global_api_server->subscribe_home_assistant_state(
-                                this->device.getEntityId().c_str(),
-                                optional<std::string>(attrName), 
-                                [this](const std::string &state) {
-                                
-                        if(this->isValueModified()){
-                            return;
-                        }
-
-                        std::string colorString = "";          
+                    subscribeHaState(optional<std::string>("hs_color"), [this](const std::string &state) {
+                        std::string colorString = "";
                         std::string::size_type pos = state.find(',');
-                        
+
                         if (pos != std::string::npos) {
                             colorString = state.substr(1, pos-1);
                         }

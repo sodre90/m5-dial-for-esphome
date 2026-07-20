@@ -28,72 +28,62 @@ namespace esphome
                 }
 
                 void showTwoWayFanMenu(M5DialDisplay& display){
-                    LovyanGFX* gfx = display.getGfx();
-                    uint16_t height = gfx->height();
-                    uint16_t width  = gfx->width();
+                    drawMenuFrame(display, display.getBackgroundColor(),
+                                  [this, &display](LovyanGFX* gfx, uint16_t width, uint16_t height){
 
-                    gfx->setTextColor(MAROON);
-                    gfx->setTextDatum(middle_center);
-
-                    gfx->startWrite();                      // Secure SPI bus
-
-                    display.clear();
-
-                    // Round %-Bar
-                    gfx->fillArc(width / 2,
-                                 height / 2,
-                                 115,
-                                 100,
-                                 150,
-                                 390,
-                                 ORANGE
-                                );
-
-                    if(strcmp(this->direction, FAN_DIRECTION_FORWARD) == 0){
+                        // Round %-Bar
                         gfx->fillArc(width / 2,
                                      height / 2,
                                      115,
                                      100,
-                                     270,
-                                     getValue()==0?270:(((float)120 / this->getMaxValue()) * getValue()) + 270,
-                                     RED
+                                     150,
+                                     390,
+                                     ORANGE
                                     );
-                    } else {
-                        gfx->fillArc(width / 2,
-                                     height / 2,
-                                     115,
-                                     100,
-                                     getValue()==0?270:270 - (((float)120 / this->getMaxValue()) * getValue()),
-                                     270,
-                                     RED
-                                    );
-                    }
-                   
-                    // Percent
-                    display.setFontsize(1.7);
-                    gfx->drawString((String(getValue()) + "%").c_str(),
-                                    width / 2,
-                                    height / 2 - 70);
 
-                    // Direction
-                    display.setFontsize(1);
-                    gfx->drawString(this->direction,
-                                    width / 2,
-                                    height / 2 - 40);  
+                        if(strcmp(this->direction, FAN_DIRECTION_FORWARD) == 0){
+                            gfx->fillArc(width / 2,
+                                         height / 2,
+                                         115,
+                                         100,
+                                         270,
+                                         getValue()==0?270:(((float)120 / this->getMaxValue()) * getValue()) + 270,
+                                         RED
+                                        );
+                        } else {
+                            gfx->fillArc(width / 2,
+                                         height / 2,
+                                         115,
+                                         100,
+                                         getValue()==0?270:270 - (((float)120 / this->getMaxValue()) * getValue()),
+                                         270,
+                                         RED
+                                        );
+                        }
 
-                    // Icon
-                    if(this->icon != nullptr){
-                        display.drawBitmapTransparent(this->icon, width/2-35, height/2-30, 70, 70, 0xFFFF);
-                    }
+                        // Percent
+                        display.setFontsize(1.7);
+                        gfx->drawString((String(getValue()) + "%").c_str(),
+                                        width / 2,
+                                        height / 2 - 70);
 
-                    // Device Name
-                    display.setFontsize(1);
-                    gfx->drawString(this->device.getName().c_str(),
-                                    width / 2,
-                                    height / 2 + 90);
- 
+                        // Direction
+                        display.setFontsize(1);
+                        gfx->drawString(this->direction,
+                                        width / 2,
+                                        height / 2 - 40);
 
-                    gfx->endWrite();                      // Release SPI bus
+                        // Icon
+                        if(this->icon != nullptr){
+                            display.drawBitmapTransparent(this->icon, width/2-35, height/2-30, 70, 70, 0xFFFF);
+                        }
+
+                        // Device Name
+                        display.setFontsize(1);
+                        gfx->drawString(this->device.getName().c_str(),
+                                        width / 2,
+                                        height / 2 + 90);
+                    });
                 }
 
             public:
@@ -152,47 +142,20 @@ namespace esphome
                 }
 
                 void registerHAListener() override {
-                    api::global_api_server->subscribe_home_assistant_state(
-                                this->device.getEntityId().c_str(),
-                                optional<std::string>(), 
-                                [this](const std::string &state) {
-                        if(this->isValueModified()){
-                            return;
-                        }
-
+                    subscribeHaState(optional<std::string>(), [this](const std::string &state) {
                         this->setState(state);
                         ESP_LOGI("HA_API", "Got State %s for %s", state.c_str(), this->device.getEntityId().c_str());
                     });
 
-                    api::global_api_server->subscribe_home_assistant_state(
-                                this->device.getEntityId().c_str(),
-                                optional<std::string>("percentage"), 
-                                [this](const std::string &state) {
-                        if(this->isValueModified()){
-                            return;
-                        }
-                        auto val = parse_number<int>(state);
-                        if (!val.has_value()) {
-                            this->setReceivedValue(0);
-                            ESP_LOGD("HA_API", "No Percentage value in %s for %s", state.c_str(), this->device.getEntityId().c_str());
-                        } else {
-                            this->setReceivedValue(round((int)val.value()));
-                            ESP_LOGI("HA_API", "Got Percentage value %i for %s", val.value(), this->device.getEntityId().c_str());
-                        }
+                    subscribeHaNumericState(optional<std::string>("percentage"), "Percentage", [this](float val) {
+                        this->setReceivedValue(round(val));
                     });
 
                     if(this->changeableDirection){
-                        api::global_api_server->subscribe_home_assistant_state(
-                                    this->device.getEntityId().c_str(),
-                                    optional<std::string>("direction"), 
-                                    [this](const std::string &state) {
-                            if(this->isValueModified()){
-                                return;
-                            }
-
-                            setDirection(state.c_str());
+                        subscribeHaState(optional<std::string>("direction"), [this](const std::string &state) {
+                            setDirection(state);
                             ESP_LOGI("HA_API", "Got direction value %s for %s", state.c_str(), this->device.getEntityId().c_str());
-                    });
+                        });
                     }
                 }
 

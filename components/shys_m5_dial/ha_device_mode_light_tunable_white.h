@@ -7,10 +7,6 @@ namespace esphome
     {
         class HaDeviceModeLightTunableWhite: public esphome::shys_m5_dial::HaDeviceMode {
             protected:
-                typedef struct coord {
-                    float x, y;
-                } COORD;
-
                 void sendValueToHomeAssistant(int value) override {
                     haApi.turnLightOnWhite(this->device.getEntityId(), value);
                 }
@@ -79,42 +75,6 @@ namespace esphome
                 }
 
 
-                void showTunableWhiteMenu(M5DialDisplay& display, uint16_t currentValue){
-                    LovyanGFX* gfx = display.getGfx();
-
-                    uint16_t height = gfx->height();
-                    uint16_t width  = gfx->width();
-
-                    uint16_t ypos = getDisplayPositionY(currentValue);
-
-                    gfx->setTextColor(MAROON);
-                    gfx->setTextDatum(middle_center);
-
-                    gfx->startWrite();                      // Secure SPI bus
-
-                  
-                    display.clear(colorTemperatureToRGB(currentValue));
-
-                    gfx->drawLine(0, ypos, width, ypos, RED );
-
-                    display.setFontsize(3);
-                    gfx->drawString((String(currentValue) + "K").c_str(),
-                                    width / 2,
-                                    height / 2 - 30);
-
-                    display.setFontsize(1);
-                    gfx->drawString(this->device.getName().c_str(),
-                                    width / 2,
-                                    height / 2 + 20);
-                    gfx->drawString("White",
-                                    width / 2,
-                                    height / 2 + 50);  
-
-                    gfx->endWrite();                      // Release SPI bus
-                }
-
-
-
                 void refreshWhiteMenu(M5DialDisplay& display){
                     LovyanGFX* gfx = display.getGfx();
 
@@ -123,23 +83,14 @@ namespace esphome
                     int height = gfx->height();
                     int width  = gfx->width();
 
-                    // choose contrasting text color based on current background (perceived luminance)
-                    uint32_t col888 = colorTemperatureToRGB888(currentValue);
-                    uint8_t r = (col888 >> 16) & 0xFF;
-                    uint8_t g = (col888 >> 8) & 0xFF;
-                    uint8_t b = (col888) & 0xFF;
-                    float luminance = 0.2126f*r + 0.7152f*g + 0.0722f*b;
-                    uint16_t textColor = (luminance > 140.0f) ? BLACK : WHITE;
+                    uint16_t base565 = colorTemperatureToRGB(currentValue);
+                    uint16_t textColor = M5DialDisplay::getContrastColor(base565);
 
                     gfx->setTextColor(textColor);
                     gfx->setTextDatum(middle_center);
 
                     gfx->startWrite();                    // Secure SPI bus
-                    // glossy center circle using layered fills for subtle depth
-                    uint16_t base565 = colorTemperatureToRGB(currentValue);
-                    gfx->fillCircle(width/2, height/2, 70, base565);
-                    gfx->fillCircle(width/2, height/2, 50, M5Dial.Display.color565(255,255,255));
-                    gfx->fillCircle(width/2, height/2, 48, base565);
+                    display.drawLayeredButton(width/2, height/2, 70, base565);
 
                     display.setFontsize(1);
                     gfx->drawString(String(currentValue),
@@ -205,23 +156,8 @@ namespace esphome
 
 
                 void registerHAListener() override {
-                    api::global_api_server->subscribe_home_assistant_state(
-                                this->device.getEntityId().c_str(),
-                                optional<std::string>("color_temp_kelvin"), 
-                                [this](const std::string &state) {
-
-                        if(this->isValueModified()){
-                            return;
-                        }
-
-                        auto val = parse_number<int>(state);
-                        if (!val.has_value()) {
-                            this->setReceivedValue(0);
-                            ESP_LOGD("HA_API", "No Kelvin value in %s for %s", state.c_str(), this->device.getEntityId().c_str());
-                        } else {
-                            this->setReceivedValue(round((float)val.value()));
-                            ESP_LOGI("HA_API", "Got Kelvin value %i for %s", val.value(), this->device.getEntityId().c_str());
-                        }
+                    subscribeHaNumericState(optional<std::string>("color_temp_kelvin"), "Kelvin", [this](float val) {
+                        this->setReceivedValue(round(val));
                     });
                 }
                 

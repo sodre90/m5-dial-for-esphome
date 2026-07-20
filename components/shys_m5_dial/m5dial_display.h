@@ -87,7 +87,7 @@ namespace esphome
                 }
 
                 void setBackgroundColor(uint16_t color){
-                    this->backgroundColor = backgroundColor;
+                    this->backgroundColor = color;
                 }
 
                 uint16_t getBackgroundColor(){
@@ -202,6 +202,40 @@ namespace esphome
                     this->resetScreensaverRunning();
                 }
 
+                static uint16_t blendColor(uint16_t c1, uint16_t c2, float t){
+                    uint8_t r1 = ((c1 >> 11) & 0x1F) << 3;
+                    uint8_t g1 = ((c1 >> 5) & 0x3F) << 2;
+                    uint8_t b1 = (c1 & 0x1F) << 3;
+
+                    uint8_t r2 = ((c2 >> 11) & 0x1F) << 3;
+                    uint8_t g2 = ((c2 >> 5) & 0x3F) << 2;
+                    uint8_t b2 = (c2 & 0x1F) << 3;
+
+                    uint8_t r = r1 + (int)((r2 - r1) * t);
+                    uint8_t g = g1 + (int)((g2 - g1) * t);
+                    uint8_t b = b1 + (int)((b2 - b1) * t);
+
+                    return M5Dial.Display.color565(r,g,b);
+                }
+
+                static float getLuminance(uint16_t color565){
+                    uint8_t r = ((color565 >> 11) & 0x1F) << 3;
+                    uint8_t g = ((color565 >> 5) & 0x3F) << 2;
+                    uint8_t b = (color565 & 0x1F) << 3;
+                    return 0.2126f*r + 0.7152f*g + 0.0722f*b;
+                }
+
+                static uint16_t getContrastColor(uint16_t background565){
+                    return getLuminance(background565) > 140.0f ? BLACK : WHITE;
+                }
+
+                void drawLayeredButton(uint16_t cx, uint16_t cy, uint16_t r, uint16_t base){
+                    uint16_t ringOuter = r * 5 / 7;
+                    M5Dial.Display.fillCircle(cx, cy, r, base);
+                    M5Dial.Display.fillCircle(cx, cy, ringOuter, WHITE);
+                    M5Dial.Display.fillCircle(cx, cy, ringOuter > 2 ? ringOuter - 2 : 0, base);
+                }
+
                 float getDegByCoord(uint16_t x, uint16_t y){
                     float mx = M5Dial.Display.width()/2;
                     float my = M5Dial.Display.height()/2;
@@ -246,7 +280,7 @@ namespace esphome
                 }
 
                 int getRowHeight(float fontSize){
-                    return (int)this->fontFactor * fontSize;
+                    return (int)(this->fontFactor * fontSize);
                 }
 
                 void setFontByName(const std::string& name) {

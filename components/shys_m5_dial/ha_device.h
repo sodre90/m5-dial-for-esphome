@@ -232,3 +232,5 @@ namespace esphome
 
     }
 }
+
+#include "ha_device_mode_impl.h"

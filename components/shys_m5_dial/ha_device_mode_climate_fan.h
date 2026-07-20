@@ -20,51 +20,7 @@ namespace esphome
                 }
 
                 void showModeSelection(M5DialDisplay& display){
-                    LovyanGFX* gfx = display.getGfx();
-                    uint16_t height = gfx->height();
-                    uint16_t width  = gfx->width();
-
-                    gfx->setTextColor(MAROON);
-                    gfx->setTextDatum(middle_center);
-
-                    gfx->startWrite();                      // Secure SPI bus
-
-                    display.clear();
-
-                    // Device Name
-                    display.setFontsize(1);
-                    gfx->drawString(this->device.getName().c_str(),
-                                    width / 2,
-                                    height / 2 - 80);
-
-                    if(this->getMaxValue()>0){
-                        if(this->getValue()>0){
-                            display.setFontsize(.7);
-                            gfx->drawString(this->fanModes[this->getValue()-1].c_str(),
-                                            width / 2,
-                                            height / 2-40); 
-                        }
-
-                        display.setFontsize(1.5);
-                        gfx->drawString(this->fanModes[this->getValue()].c_str(),
-                                        width / 2,
-                                        height / 2);
-
-                        if(this->getValue()<this->getMaxValue()){
-                            display.setFontsize(.7);
-                            gfx->drawString(this->fanModes[this->getValue()+1].c_str(),
-                                            width / 2,
-                                            height / 2+40); 
-                        }
-
-                        display.setFontsize(1);
-                        gfx->drawString("Fan Mode",
-                                        width / 2,
-                                        height / 2 +80);
-
-                    }
-
-                    gfx->endWrite();                      // Release SPI bus
+                    drawSelectionMenu(display, this->fanModes, "Fan Mode");
                 }
 
             public:
@@ -83,11 +39,7 @@ namespace esphome
                     JsonObject modeConfig = this->device.getModeConfig();
 
                     if (modeConfig["fan_mode"].is<JsonObject>() && !manualModes) {
-                        api::global_api_server->subscribe_home_assistant_state(
-                                    this->device.getEntityId().c_str(),
-                                    optional<std::string>("fan_modes"), 
-                                    [this](const std::string &state) {
-
+                        subscribeHaState(optional<std::string>("fan_modes"), [this](const std::string &state) {
                             ESP_LOGI("HA_API", "Got Climate Fan-Mode %s for %s", state.c_str(), this->device.getEntityId().c_str());
 
                             std::string str = state;
@@ -99,15 +51,13 @@ namespace esphome
                             std::stringstream ss(str);
                             std::vector<std::string> result;
                             std::string token;
-                            int i = 0;
                             while (std::getline(ss, token, ',')) {
                                 result.push_back(token);
-                                i++;
                             }
 
                             this->fanModes = result;
-                            this->setMaxValue(i-1);
-                        });
+                            this->setMaxValue(result.empty() ? 0 : result.size()-1);
+                        }, false);
                     }
                 }
 
@@ -117,11 +67,11 @@ namespace esphome
                 }
 
                 bool onButton(M5DialDisplay& display, const char * clickType) override {
-                    if (strcmp(clickType, BUTTON_SHORT)==0){
-                        const std::string fanMode = this->fanModes[this->getValue()].c_str();
+                    if (strcmp(clickType, BUTTON_SHORT)==0 && !this->fanModes.empty()){
+                        const std::string fanMode = this->fanModes[this->getValue()];
 
                         haApi.setClimateFanMode(this->device.getEntityId(), fanMode);
-                        
+
                         return true;
                     }
 

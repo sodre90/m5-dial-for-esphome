@@ -14,7 +14,7 @@ namespace esphome
 
                 uint16_t media_duration = 0;
                 uint16_t media_position = 0;
-                
+
                 unsigned long lastRefresh = 0;
 
                 void sendValueToHomeAssistant(int value) override {
@@ -22,110 +22,89 @@ namespace esphome
                 }
 
                 float getMediaPositionPct(){
-                    float result = 0;
-
-                    if(strcmp(this->player_state.c_str(), "playing")==0){
-                        if(this->media_duration > 0 && this->media_position <= this->media_duration){
-                            this->media_position/this->media_duration*100;
-                        }
+                    if(strcmp(this->player_state.c_str(), "playing")==0
+                          && this->media_duration > 0
+                          && this->media_position <= this->media_duration){
+                        return (float)this->media_position / this->media_duration * 100.0f;
                     }
 
-                    return result;
+                    return 0;
+                }
+
+                void drawControlButton(M5DialDisplay& display, uint16_t cx, uint16_t cy){
+                    display.drawLayeredButton(cx, cy, 30, RED);
                 }
 
                 void showPlayMenu(M5DialDisplay& display){
-                    LovyanGFX* gfx = display.getGfx();
-                    uint16_t height = gfx->height();
-                    uint16_t width  = gfx->width();
+                    drawMenuFrame(display, display.getBackgroundColor(),
+                                  [this, &display](LovyanGFX* gfx, uint16_t width, uint16_t height){
 
-                    gfx->setTextColor(MAROON);
-                    gfx->setTextDatum(middle_center);
+                        uint16_t cx = width / 2;
+                        uint16_t cy = height / 2;
 
-                    gfx->startWrite();                      // Secure SPI bus
+                        // Round Volume Bar
+                        gfx->fillArc(cx, cy, 115, 100,
+                                     150,
+                                     getValue()==0?150:(((float)240 / 100) * getValue()) + 150,
+                                     RED);
 
-                    display.clear();
+                        gfx->fillArc(cx, cy, 115, 100,
+                                     getValue()==0?150:(((float)240 / 100) * getValue()) + 150,
+                                     390,
+                                     ORANGE);
 
-                    // Round Volume Bar
-                    gfx->fillArc(width / 2,
-                                 height / 2,
-                                 115,
-                                 100,
-                                 150,
-                                 getValue()==0?150:(((float)240 / 100) * getValue()) + 150,
-                                 RED
-                                );
+                        // Percent
+                        display.setFontsize(1.7);
+                        gfx->drawString((String(getValue()) + "%").c_str(),
+                                        cx,
+                                        cy - 70);
 
-                    gfx->fillArc(width / 2,
-                                 height / 2,
-                                 115,
-                                 100,
-                                 getValue()==0?150:(((float)240 / 100) * getValue()) + 150,
-                                 390,
-                                 ORANGE
-                                );
+                        // Player state
+                        display.setFontsize(1);
+                        gfx->drawString(this->player_state.c_str(),
+                                        cx,
+                                        cy - 40);
 
-                   
-                    // Percent
-                    display.setFontsize(1.7);
-                    gfx->drawString((String(getValue()) + "%").c_str(),
-                                    width / 2,
-                                    height / 2 - 70);
+                        drawControlButton(display, cx - 80, cy);
+                        drawControlButton(display, cx, cy);
+                        drawControlButton(display, cx + 80, cy);
 
-                    // Mode
-                    display.setFontsize(1);
-                    gfx->drawString(this->player_state.c_str(),
-                                    width / 2,
-                                    height / 2 - 40);  
+                        uint16_t glyphColor = M5DialDisplay::getContrastColor(RED);
 
-                   
+                        if(strcmp(this->player_state.c_str(), "playing") == 0){
+                            // Pause glyph
+                            gfx->fillRect(cx-10, cy-12, 7, 24, glyphColor);
+                            gfx->fillRect(cx+3, cy-12, 7, 24, glyphColor);
+                        } else {
+                            // Play glyph
+                            gfx->fillTriangle(cx-8, cy-12, cx-8, cy+12, cx+12, cy, glyphColor);
+                        }
 
-                    if(strcmp(this->player_state.c_str(), "playing") == 0){
-                        // Pause Button
-                        gfx->fillRect(width/2-20, height/2-20, 15, 40, RED);
-                        gfx->fillRect(width/2+5, height/2-20, 15, 40, RED);
-                    } else {
-                        // Play Button
-                        M5Dial.Display.fillTriangle(width/2-13, height/2-20, width/2-13, height/2+20, width/2+23, height/2, RED);
-                    }
+                        // FWD glyph
+                        gfx->fillTriangle(cx+80-11, cy-9, cx+80-11, cy+9, cx+80+1, cy, glyphColor);
+                        gfx->fillTriangle(cx+80-1, cy-9, cx+80-1, cy+9, cx+80+11, cy, glyphColor);
 
-                    // FWD
-                    M5Dial.Display.fillTriangle(width/2+50, height/2-20, width/2+50, height/2+20, width/2+75, height/2, RED);
-                    M5Dial.Display.fillTriangle(width/2+65, height/2-20, width/2+65, height/2+20, width/2+95, height/2, RED);
+                        // PREV glyph
+                        gfx->fillTriangle(cx-80+11, cy-9, cx-80+11, cy+9, cx-80-1, cy, glyphColor);
+                        gfx->fillTriangle(cx-80+1, cy-9, cx-80+1, cy+9, cx-80-11, cy, glyphColor);
 
-                    // PREV
-                    M5Dial.Display.fillTriangle(width/2-50, height/2-20, width/2-50, height/2+20, width/2-75, height/2, RED);
-                    M5Dial.Display.fillTriangle(width/2-65, height/2-20, width/2-65, height/2+20, width/2-95, height/2, RED);
+                        // Position Bar
+                        gfx->fillRect(cx-50, cy+40, 100, 5, ORANGE);
+                        gfx->fillRect(cx-50, cy+40, getMediaPositionPct(), 5, RED);
 
+                        // Media-Artist/Title
+                        display.setFontsize(.7);
+                        bool displayTitle = ((millis() / 5000) % 2 == 1);
+                        gfx->drawString(displayTitle ? this->media_title.c_str() : this->media_artist.c_str(),
+                                        cx,
+                                        cy + 65);
 
-
-                    // Position Bar
-                    gfx->fillRect(width/2-50, height/2+40, 100, 5, ORANGE);
-                    gfx->fillRect(width/2-50, height/2+40, getMediaPositionPct(), 5, RED);
-
-
-                    // Media-Artist/Title
-                    display.setFontsize(.7);
-                    bool displayTitle = ((millis() / 5000) % 2 == 1);
-                    if(displayTitle){
-                        gfx->drawString(this->media_title.c_str(),
-                                        width / 2,
-                                        height / 2 + 65);                          
-                    } else {
-                        gfx->drawString(this->media_artist.c_str(),
-                                        width / 2,
-                                        height / 2 + 65);
-                    }
-
-
-                    // Device Name
-                    display.setFontsize(1);
-                    gfx->drawString(this->device.getName().c_str(),
-                                    width / 2,
-                                    height / 2 + 90);
-                   
-
-
-                    gfx->endWrite();                      // Release SPI bus
+                        // Device Name
+                        display.setFontsize(1);
+                        gfx->drawString(this->device.getName().c_str(),
+                                        cx,
+                                        cy + 90);
+                    });
                 }
 
             public:
@@ -139,129 +118,42 @@ namespace esphome
                 }
 
                 void registerHAListener() override {
-                    api::global_api_server->subscribe_home_assistant_state(
-                                this->device.getEntityId().c_str(),
-                                optional<std::string>("volume_level"), 
-                                [this](const std::string &state) {
-                        
-                        if(this->isValueModified()){
-                            return;
-                        }
-
-                        ESP_LOGI("HA_API", "Got Volume value %s for %s", state.c_str(), this->device.getEntityId().c_str());
-                        auto val = parse_number<float>(state);
-                        ESP_LOGI("HA_API", "Parsed Volume value %f for %s", val.value(), this->device.getEntityId().c_str());
-
-                        if (!val.has_value()) {
-                            this->setReceivedValue(0);
-                            ESP_LOGD("HA_API", "No Volume value in %s for %s", state.c_str(), this->device.getEntityId().c_str());
-                        } else {
-                            this->setReceivedValue(val.value()*100);
-                            ESP_LOGI("HA_API", "Set Volume value %f for %s", val.value(), this->device.getEntityId().c_str());
-
-                        }
+                    subscribeHaNumericState(optional<std::string>("volume_level"), "Volume", [this](float val) {
+                        this->setReceivedValue(val*100);
                     });
 
-
-                    api::global_api_server->subscribe_home_assistant_state(
-                                this->device.getEntityId().c_str(),
-                                optional<std::string>(), 
-                                [this](const std::string &state) {
-                        
-                        if(this->isValueModified()){
-                            return;
-                        }
-
+                    subscribeHaState(optional<std::string>(), [this](const std::string &state) {
                         this->player_state = state;
-
                         this->displayRefreshNeeded = true;
                         ESP_LOGI("HA_API", "Got State %s for %s", state.c_str(), this->device.getEntityId().c_str());
                     });
 
-                    api::global_api_server->subscribe_home_assistant_state(
-                                this->device.getEntityId().c_str(),
-                                optional<std::string>("media_title"), 
-                                [this](const std::string &state) {
-                        
-                        if(this->isValueModified()){
-                            return;
-                        }
-
+                    subscribeHaState(optional<std::string>("media_title"), [this](const std::string &state) {
                         this->media_title = state;
-
                         this->displayRefreshNeeded = true;
                         ESP_LOGI("HA_API", "Got Title %s for %s", state.c_str(), this->device.getEntityId().c_str());
                     });
 
-                    api::global_api_server->subscribe_home_assistant_state(
-                                this->device.getEntityId().c_str(),
-                                optional<std::string>("media_artist"), 
-                                [this](const std::string &state) {
-                        
-                        if(this->isValueModified()){
-                            return;
-                        }
-
+                    subscribeHaState(optional<std::string>("media_artist"), [this](const std::string &state) {
                         this->media_artist = state;
-
                         this->displayRefreshNeeded = true;
                         ESP_LOGI("HA_API", "Got Artist %s for %s", state.c_str(), this->device.getEntityId().c_str());
                     });
 
-                    api::global_api_server->subscribe_home_assistant_state(
-                                this->device.getEntityId().c_str(),
-                                optional<std::string>("media_album_name"), 
-                                [this](const std::string &state) {
-                        
-                        if(this->isValueModified()){
-                            return;
-                        }
-
+                    subscribeHaState(optional<std::string>("media_album_name"), [this](const std::string &state) {
                         this->media_album_name = state;
-
                         this->displayRefreshNeeded = true;
                         ESP_LOGI("HA_API", "Got Album %s for %s", state.c_str(), this->device.getEntityId().c_str());
                     });
 
-                    api::global_api_server->subscribe_home_assistant_state(
-                                this->device.getEntityId().c_str(),
-                                optional<std::string>("media_duration"), 
-                                [this](const std::string &state) {
-                        
-                        if(this->isValueModified()){
-                            return;
-                        }
-
-                        auto val = parse_number<int>(state);
-                        if (!val.has_value()) {
-                            this->media_duration = 0;
-                            ESP_LOGD("HA_API", "No Media-Duration in %s for %s", state.c_str(), this->device.getEntityId().c_str());
-                        } else {
-                            this->media_duration = (int)val.value();
-                            ESP_LOGI("HA_API", "Got Media-Duration %i for %s", val.value(), this->device.getEntityId().c_str());
-                        }
+                    subscribeHaNumericState(optional<std::string>("media_duration"), "Media-Duration", [this](float val) {
+                        this->media_duration = (int)val;
                     });
 
-                    api::global_api_server->subscribe_home_assistant_state(
-                                this->device.getEntityId().c_str(),
-                                optional<std::string>("media_position"), 
-                                [this](const std::string &state) {
-                        
-                        if(this->isValueModified()){
-                            return;
-                        }
-
-                        auto val = parse_number<int>(state);
-                        if (!val.has_value()) {
-                            this->media_position = 0;
-                            ESP_LOGD("HA_API", "No Media-Position value in %s for %s", state.c_str(), this->device.getEntityId().c_str());
-                        } else {
-                            this->media_position = (int)val.value();
-                            this->displayRefreshNeeded = true;
-                            ESP_LOGI("HA_API", "Got Media-Position value %i for %s", val.value(), this->device.getEntityId().c_str());
-                        }
+                    subscribeHaNumericState(optional<std::string>("media_position"), "Media-Position", [this](float val) {
+                        this->media_position = (int)val;
+                        this->displayRefreshNeeded = true;
                     });
-
                 }
 
                 bool onTouch(M5DialDisplay& display, uint16_t x, uint16_t y) override {
@@ -298,7 +190,7 @@ namespace esphome
                             M5Dial.Speaker.tone(5000, 20);
                             haApi.setNextTrackOnMediaPlayer(this->device.getEntityId());
                             return true;
-                        } 
+                        }
                     }
 
                     return false;

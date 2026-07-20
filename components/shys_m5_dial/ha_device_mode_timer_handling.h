@@ -143,72 +143,33 @@ namespace esphome
                     this->setMinMaxLimitActive(false);
                 }
 
-                void registerHAListener() {
-                    api::global_api_server->subscribe_home_assistant_state(
-                                this->device.getEntityId().c_str(),
-                                optional<std::string>(), 
-                                [this](const std::string &state) {
-                        if(this->isValueModified()){
-                            return;
-                        }
-
+                void registerHAListener() override {
+                    subscribeHaState(optional<std::string>(), [this](const std::string &state) {
                         this->timerState = state;
-
-                        if(this->isTimerPaused()){
-                            this->activateBar(true);
-                        } else if(this->isTimerActive()){
-                            this->activateBar(true);
-                        } else {
-                            this->activateBar(false);
-                        }
+                        this->activateBar(this->isTimerPaused() || this->isTimerActive());
 
                         ESP_LOGI("HA_API", "Got state %s for %s", state.c_str(), this->device.getEntityId().c_str());
-
                         this->displayRefreshNeeded = true;
                     });
 
-                    api::global_api_server->subscribe_home_assistant_state(
-                                this->device.getEntityId().c_str(),
-                                optional<std::string>("duration"), 
-                                [this](const std::string &state) {
-                        if(this->isValueModified()){
-                            return;
-                        }
-
+                    subscribeHaState(optional<std::string>("duration"), [this](const std::string &state) {
                         this->duration = state;
                         ESP_LOGI("HA_API", "Got duration %s for %s", state.c_str(), this->device.getEntityId().c_str());
-
                         this->displayRefreshNeeded = true;
                     });
 
-                    api::global_api_server->subscribe_home_assistant_state(
-                                this->device.getEntityId().c_str(),
-                                optional<std::string>("remaining"), 
-                                [this](const std::string &state) {
-                        if(this->isValueModified()){
-                            return;
-                        }
-
+                    subscribeHaState(optional<std::string>("remaining"), [this](const std::string &state) {
                         this->remaining = state;
                         ESP_LOGI("HA_API", "Got remaining %s for %s", state.c_str(), this->device.getEntityId().c_str());
-
                         this->displayRefreshNeeded = true;
                     });
 
-                    api::global_api_server->subscribe_home_assistant_state(
-                                this->device.getEntityId().c_str(),
-                                optional<std::string>("finishes_at"), 
-                                [this](const std::string &state) {
-                        if(this->isValueModified()){
-                            return;
-                        }
-
+                    subscribeHaState(optional<std::string>("finishes_at"), [this](const std::string &state) {
                         this->finishesAt = state;
                         ESP_LOGI("HA_API", "Got finish-time %s for %s", state.c_str(), this->device.getEntityId().c_str());
-
                         this->displayRefreshNeeded = true;
                     });
-                };
+                }
 
 
                 void refreshDisplay(M5DialDisplay& display, bool init) override {

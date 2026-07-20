@@ -17,24 +17,11 @@ namespace esphome
                     this->setIcon(COVER_CLOSED_IMG, 4900);
                 }
 
-                void registerHAListener() {
-                    api::global_api_server->subscribe_home_assistant_state(
-                                this->device.getEntityId().c_str(),
-                                optional<std::string>("current_position"), 
-                                [this](const std::string &state) {
-                        if(this->isValueModified()){
-                            return;
-                        }
-                        auto val = parse_number<int>(state);
-                        if (!val.has_value()) {
-                            this->setReceivedValue(0);
-                            ESP_LOGD("HA_API", "No Position value in %s for %s", state.c_str(), this->device.getEntityId().c_str());
-                        } else {
-                            this->setReceivedValue(val.value());
-                            ESP_LOGI("HA_API", "Got Position value %i for %s", val.value(), this->device.getEntityId().c_str());
-                        }
+                void registerHAListener() override {
+                    subscribeHaNumericState(optional<std::string>("current_position"), "Position", [this](float val) {
+                        this->setReceivedValue(val);
                     });
-                };
+                }
 
                 bool onButton(M5DialDisplay& display, const char * clickType) override {
                     if (strcmp(clickType, BUTTON_SHORT)==0){

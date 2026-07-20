@@ -52,41 +52,32 @@ namespace esphome
                 }
 
                 void showLockStatus(M5DialDisplay& display){
-                    LovyanGFX* gfx = display.getGfx();
-                    uint16_t height = gfx->height();
-                    uint16_t width  = gfx->width();
+                    drawMenuFrame(display, display.getBackgroundColor(),
+                                  [this, &display](LovyanGFX* gfx, uint16_t width, uint16_t height){
+                        display.setFontsize(2);
+                        gfx->drawString(this->getLockState().c_str(),
+                                        width / 2,
+                                        height / 2 - 15);
 
-                    gfx->setTextColor(MAROON);
-                    gfx->setTextDatum(middle_center);
+                        display.setFontsize(1);
+                        gfx->drawString(this->device.getName().c_str(),
+                                        width / 2,
+                                        height / 2 - 80);
+                        gfx->drawString("Lock",
+                                        width / 2,
+                                        height / 2 - 60);
 
-                    gfx->startWrite();                      // Secure SPI bus
+                        gfx->drawString(String(this->getValue()).c_str(),
+                                        width / 2,
+                                        height / 2 + 15);
 
-                    display.clear();
-
-                    display.setFontsize(2);
-                    gfx->drawString(this->getLockState().c_str(),
-                                    width / 2,
-                                    height / 2 - 15);
-                    
-                    display.setFontsize(1);
-                    gfx->drawString(this->device.getName().c_str(),
-                                    width / 2,
-                                    height / 2 - 80);
-                    gfx->drawString("Lock",
-                                    width / 2,
-                                    height / 2 - 60);  
-
-                    gfx->drawString(String(this->getValue()).c_str(),
-                                    width / 2,
-                                    height / 2 + 15);
-
-                    display.drawBitmapTransparent(DOOR_OPEN_IMG, width/2-35, height/2+30, 70, 70, 0xFFFF);
-                    display.setFontsize(.7);
-                    gfx->drawString("Open",
-                                    width / 2,
-                                    height / 2 +105);  
-
-                    gfx->endWrite();                      // Release SPI bus
+                        display.drawLayeredButton(width/2, height/2+65, 45, this->isLocked() ? RED : DARKGREEN);
+                        display.drawBitmapTransparent(DOOR_OPEN_IMG, width/2-35, height/2+30, 70, 70, 0xFFFF);
+                        display.setFontsize(.7);
+                        gfx->drawString("Open",
+                                        width / 2,
+                                        height / 2 +105);
+                    });
                 }
 
                 void setReceivedLockState(const std::string& newState){
@@ -125,15 +116,7 @@ namespace esphome
                 }
 
                 void registerHAListener() override {
-                    api::global_api_server->subscribe_home_assistant_state(
-                                this->device.getEntityId().c_str(),
-                                optional<std::string>(), 
-                                [this](const std::string &state) {
-
-                        if(this->isValueModified()){
-                            return;
-                        }
-
+                    subscribeHaState(optional<std::string>(), [this](const std::string &state) {
                         this->setReceivedLockState(state);
                         ESP_LOGI("HA_API", "Got State %s for %s", state.c_str(), this->device.getEntityId().c_str());
                     });
