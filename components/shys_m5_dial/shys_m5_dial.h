@@ -14,6 +14,7 @@
 #include "ha_device_lock.h"
 #include "ha_device_number.h"
 #include "ha_device_timer.h"
+#include "ha_device_scene.h"
 
 #include "M5Dial.h"
 
@@ -288,6 +289,14 @@ namespace esphome
       void addNumber(const std::string& entity_id, const std::string& name, const std::string& modes){
         HaDeviceNumber* number = new HaDeviceNumber(entity_id, name, modes);
         addDevice(number);
+      }
+
+
+     /**
+      *
+      */
+      void addScenes(const std::string& scenesJson){
+        addDevice(new HaDeviceScenes("scenes", "Scenes", scenesJson));
       }
 
 

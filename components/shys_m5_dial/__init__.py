@@ -100,6 +100,20 @@ CONF_DEVICE_TIMER                     = "timer"
 CONF_DEVICE_TIMER_MODE                = "timer_mode"
 
 
+# SCENES
+CONF_DEVICE_SCENES                    = "scenes"
+MAX_SCENES                            = 8
+
+
+def validate_scene_entity(value):
+    value = cv.string(value)
+    if not value.startswith("scene.") and not value.startswith("script."):
+        raise cv.Invalid(
+            f"Scene entries must reference a scene.* or script.* entity, got '{value}'"
+        )
+    return value
+
+
 
 
 
@@ -290,6 +304,15 @@ CONFIG_SCHEMA = cv.Schema({
         })),
 
 
+        cv.Optional(CONF_DEVICE_SCENES, default=[]): cv.All(
+            cv.ensure_list(dict({
+                cv.Required(CONF_DEVICE_ENTRY_ID): validate_scene_entity,
+                cv.Required(CONF_DEVICE_ENTRY_NAME): cv.string,
+            })),
+            cv.Length(max=MAX_SCENES),
+        ),
+
+
     }))
 
 }).extend(cv.COMPONENT_SCHEMA)
@@ -417,7 +440,12 @@ async def to_code(config):
         if CONF_DEVICE_TIMER in confDevices:
             confTimer = confDevices[CONF_DEVICE_TIMER]
             for timerEntry in confTimer:
-                cg.add(var.addTimer(timerEntry[CONF_DEVICE_ENTRY_ID], 
-                                     timerEntry[CONF_DEVICE_ENTRY_NAME], 
+                cg.add(var.addTimer(timerEntry[CONF_DEVICE_ENTRY_ID],
+                                     timerEntry[CONF_DEVICE_ENTRY_NAME],
                                      json.dumps(timerEntry[CONF_DEVICE_MODES]))
                                     )
+
+
+        if confDevices.get(CONF_DEVICE_SCENES):
+            confScenes = confDevices[CONF_DEVICE_SCENES]
+            cg.add(var.addScenes(json.dumps({"scenes": [dict(entry) for entry in confScenes]})))

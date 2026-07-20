@@ -879,6 +879,38 @@ Der hier eingestellte Wert überschreibt den allgemein eingestellten Wert und gi
   
 &nbsp;  
   
+------
+  
+## **Scenes**
+Unter "devices - scenes" können bis zu 8 Szenen oder Skripte angegeben werden.  
+Sie werden gemeinsam auf einer einzelnen Seite als Ring aus farbigen, antippbaren Buttons dargestellt.  
+
+Mit dem Drehregler wird ein Button hervorgehoben, ein kurzer Druck auf den Dial-Button aktiviert den hervorgehobenen Eintrag, und das Antippen eines Buttons aktiviert diesen direkt.  
+Bei der Aktivierung wird für Szenen-Entitäten `scene.turn_on` und für Skript-Entitäten `script.turn_on` aufgerufen.  
+
+Die Seite kann über den `select_device`-Service mit der Entity-ID `scenes` ausgewählt werden.  
+  
+**Code:**
+```
+shys_m5_dial:
+  ...
+  devices:
+    scenes:
+      - entity: scene.movie_night
+        name: Filmabend
+      - entity: script.good_morning
+        name: Guten Morgen
+```
+  
+**entity**  
+Gibt die Entity-ID der Szene oder des Skripts aus dem Home Assistant an.  
+Muss mit `scene.` oder `script.` beginnen.  
+
+**name**  
+Der Name des Eintrags. Der erste Buchstabe wird auf dem Button angezeigt, der vollständige Name erscheint in der Mitte der Seite, solange der Button hervorgehoben ist.  
+  
+&nbsp;  
+  
 &nbsp;  
   
 ------  

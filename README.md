@@ -874,6 +874,38 @@ The value set here overrides the globally set value and only applies to the Time
   
 &nbsp;  
   
+------
+  
+## **Scenes**
+Under "devices - scenes," up to 8 scenes or scripts can be listed.  
+They are shown together on a single page as a ring of colored, tappable buttons.  
+
+Turning the rotary encoder highlights a button, a short press of the dial button activates the highlighted entry, and tapping a button activates it directly.  
+Activation calls `scene.turn_on` for scene entities and `script.turn_on` for script entities.  
+
+The page can be selected via the `select_device` service using the entity ID `scenes`.  
+  
+**Code:**
+```
+shys_m5_dial:
+  ...
+  devices:
+    scenes:
+      - entity: scene.movie_night
+        name: Movie Night
+      - entity: script.good_morning
+        name: Morning
+```
+  
+**entity**  
+Specifies the entity ID of the scene or script from Home Assistant.  
+Must start with `scene.` or `script.`  
+
+**name**  
+The name of the entry. The first letter is shown on the button, the full name is shown in the center of the page while the button is highlighted.  
+  
+&nbsp;  
+  
 &nbsp;  
   
 ------  
