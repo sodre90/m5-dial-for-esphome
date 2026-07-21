@@ -1,10 +1,11 @@
 import json
+from pathlib import Path
 
 import esphome.codegen as cg
 import esphome.config_validation as cv
 
 from esphome.const import CONF_ID, CONF_NAME
-from esphome.components import time
+from esphome.components import esp32, time
 
 
 # LIMITS
@@ -335,6 +336,12 @@ CONFIG_SCHEMA = cv.Schema({
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
+
+    esp32.add_extra_script(
+        "pre",
+        "patch_m5gfx_i2c.py",
+        Path(__file__).parent / "patch_m5gfx_i2c.py",
+    )
 
     if CONF_SCREEN_OFF_TIME in config:
         screenOffTime = config[CONF_SCREEN_OFF_TIME]
