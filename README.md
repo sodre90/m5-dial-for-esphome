@@ -1,4 +1,6 @@
 # M5 Stack Dial Custom Component for ESPHome
+This is a fork of the original [SmartHome-yourself/m5-dial-for-esphome](https://github.com/SmartHome-yourself/m5-dial-for-esphome).
+
 More information about the [M5 Stack Dial](https://shop.m5stack.com/products/m5stack-dial-esp32-s3-smart-rotary-knob-w-1-28-round-touch-screen?ref=smarthomeyourself)
   
 This component turns the M5 Stack Dial into a universal remote control for Home Assistant.  
