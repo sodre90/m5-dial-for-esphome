@@ -65,6 +65,7 @@ namespace esphome
       M5DialEEPROM* m5DialEEPROM = new M5DialEEPROM();
 
       esphome::time::RealTimeClock* local_time;
+      esphome::sensor::Sensor* outdoorTemperatureSensor = nullptr;
 
       bool startsWith(const char *pre, const char *str){
           return strncmp(pre, str, strlen(pre)) == 0;
@@ -220,10 +221,22 @@ namespace esphome
         ESP_LOGI("DEVICE", "setScreensaver %s", value.c_str());
 
         if(strcmp(value.c_str(), "clock") == 0){
-          m5DialDisplay->setScreensaver(new ScreensaverClock());
+          ScreensaverClock* screensaverClock = new ScreensaverClock();
+          screensaverClock->setLocalTime(this->local_time);
+          m5DialDisplay->setScreensaver(screensaverClock);
+        } else if(strcmp(value.c_str(), "digital_clock") == 0){
+          ScreensaverDigitalClock* screensaverDigitalClock = new ScreensaverDigitalClock();
+          screensaverDigitalClock->setLocalTime(this->local_time);
+          screensaverDigitalClock->setOutdoorTemperatureSensor(this->outdoorTemperatureSensor);
+          m5DialDisplay->setScreensaver(screensaverDigitalClock);
         } else {
           m5DialDisplay->setScreensaver(nullptr);
         }
+      }
+
+
+      void setOutdoorTemperatureSensor(esphome::sensor::Sensor* sensor){
+        this->outdoorTemperatureSensor = sensor;
       }
 
 

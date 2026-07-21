@@ -49,15 +49,21 @@ time:
   - platform: homeassistant
     id: ha_time
 
+sensor:
+  - platform: homeassistant
+    id: outdoor_temperature
+    entity_id: sensor.test_outdoor_temperature
+
 shys_m5_dial:
   time_component: ha_time
+  outdoor_temperature_sensor: outdoor_temperature
   screen_off_time: 30000
   long_press_duration: 1200
   send_value_delay: 1200
   send_value_lock: 3000
   rotary_step_width: 10
   font: default
-  screensaver: clock
+  screensaver: digital_clock
   accent_color: "#00B0FF"
   devices:
     lights:

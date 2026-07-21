@@ -5,7 +5,7 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 
 from esphome.const import CONF_ID, CONF_NAME
-from esphome.components import esp32, time
+from esphome.components import esp32, time, sensor
 
 
 # LIMITS
@@ -30,6 +30,7 @@ CONF_ACCENT_COLOR                     = "accent_color"
 CONF_DISPLAY_ROTATE                   = "display_rotate"
 
 CONF_TIME_COMPONENT                   = "time_component"
+CONF_OUTDOOR_TEMPERATURE_SENSOR       = "outdoor_temperature_sensor"
 
 
 # ALLGEMEINE MODE PARAMETER
@@ -152,7 +153,7 @@ DEFAULT_CONF_DISPLAY_ROTATE            = 2
 
 
 
-SCREENSAVER = ["off", "clock"]
+SCREENSAVER = ["off", "clock", "digital_clock"]
 
 
 # ------------------------------------------------------
@@ -177,6 +178,7 @@ CONFIG_SCHEMA = cv.Schema({
     cv.Optional(CONF_DISPLAY_ROTATE, default=DEFAULT_CONF_DISPLAY_ROTATE): cv.int_range(0, 7),
     
     cv.Required(CONF_TIME_COMPONENT): cv.use_id(time),
+    cv.Optional(CONF_OUTDOOR_TEMPERATURE_SENSOR): cv.use_id(sensor.Sensor),
 
     cv.Optional(CONF_DEVICES, default=dict()): cv.All(dict({
     
@@ -347,6 +349,14 @@ async def to_code(config):
         screenOffTime = config[CONF_SCREEN_OFF_TIME]
         cg.add(var.setScreenOffTime(screenOffTime))
 
+    if CONF_TIME_COMPONENT in config:
+        time_component = await cg.get_variable(config[CONF_TIME_COMPONENT])
+        cg.add(var.setTimeComponent(time_component))
+
+    if CONF_OUTDOOR_TEMPERATURE_SENSOR in config:
+        outdoor_temperature_sensor = await cg.get_variable(config[CONF_OUTDOOR_TEMPERATURE_SENSOR])
+        cg.add(var.setOutdoorTemperatureSensor(outdoor_temperature_sensor))
+
     if CONF_SCREENSAVER in config:
         screensaver = config[CONF_SCREENSAVER]
         cg.add(var.setScreensaver(screensaver))
@@ -381,11 +391,6 @@ async def to_code(config):
     if CONF_DISPLAY_ROTATE in config:
         displayRotate = config[CONF_DISPLAY_ROTATE]
         cg.add(var.setDisplayRotation(displayRotate))
-
-    if CONF_TIME_COMPONENT in config:
-        time_component = await cg.get_variable(config[CONF_TIME_COMPONENT])
-        cg.add(var.setTimeComponent(time_component))
-
 
 
     if CONF_DEVICES in config:

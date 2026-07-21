@@ -332,6 +332,10 @@ namespace esphome
                     return (int)(this->fontFactor * fontSize);
                 }
 
+                void applyConfiguredFont(){
+                    this->setFontByName(this->fontName);
+                }
+
                 void setFontByName(const std::string& name) {
                     if (strcmp(name.c_str(), "default")==0) {
                         this->setFontName("default");
