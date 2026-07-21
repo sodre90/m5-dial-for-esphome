@@ -53,7 +53,10 @@ namespace esphome
       int lastLoop = 0;
 
       bool enableRFID = true;
-      bool enableEncoder = true;
+      // M5DialRotary reads the encoder via its own PCNT setup (begin(), called
+      // below); M5Dial's own encoder must stay disabled here so it doesn't also
+      // attach interrupts to the same two GPIOs.
+      bool enableEncoder = false;
 
       M5DialDisplay* m5DialDisplay = new M5DialDisplay();
       M5DialRfid* m5DialRfid = new M5DialRfid();
@@ -331,6 +334,7 @@ namespace esphome
 
         auto cfg = M5.config();
         M5Dial.begin(cfg, enableEncoder, enableRFID);
+        m5DialRotary->begin();
 
         ESP_LOGI("DEVICE", "Register Callbacks...");
         m5DialRotary->on_rotary_left(std::bind(&esphome::shys_m5_dial::ShysM5Dial::turnRotaryLeft, this));
