@@ -15,11 +15,6 @@ Currently supported entities are:
 - switch  
 - timer   
   
-## Video
-[![M5 Stack Dial](http://img.youtube.com/vi/4dE7YONEYVk/0.jpg)](https://www.youtube.com/watch?v=4dE7YONEYVk "M5 Dial as Home Assistant Remote Control")
-  
-&nbsp;  
-  
 ## Discord
 For quick exchanges, suggestions, and updates on the current development status, our Discord is also available.  
 https://discord.com/channels/293705077812625408/1217503791541387294  
