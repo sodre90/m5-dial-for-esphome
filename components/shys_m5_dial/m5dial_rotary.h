@@ -117,11 +117,11 @@ namespace esphome
                     }
 
                     if(newPosition > this->oldPosition){
-                        ESP_LOGI("DEVICE", "Rotary right");
-                        this->rotary_right_action();
-                    } else {
                         ESP_LOGI("DEVICE", "Rotary left");
                         this->rotary_left_action();
+                    } else {
+                        ESP_LOGI("DEVICE", "Rotary right");
+                        this->rotary_right_action();
                     }
 
                     this->oldPosition = newPosition;
