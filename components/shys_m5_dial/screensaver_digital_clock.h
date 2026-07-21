@@ -165,17 +165,9 @@ namespace esphome
                     display.applyConfiguredFont();
                     gfx->setTextDatum(middle_center);
 
-                    bool conditionKnown = this->hasWeatherCondition();
-                    if(conditionKnown){
-                        this->drawWeatherIcon(gfx, this->weatherConditionSensor->state, centerX, centerY - 65, 22);
-                        this->lastCondition = this->weatherConditionSensor->state;
-                    } else {
-                        this->lastCondition = "";
-                    }
-
                     gfx->setTextColor(WHITE);
                     display.setFontsize(2);
-                    gfx->drawString(timeStr, centerX, centerY - 15);
+                    gfx->drawString(timeStr, centerX, centerY - 50);
 
                     bool temperatureKnown = this->hasOutdoorTemperature();
                     if(temperatureKnown){
@@ -184,11 +176,19 @@ namespace esphome
 
                         gfx->setTextColor(M5DialDisplay::THEME_TEXT_MUTED);
                         display.setFontsize(1);
-                        gfx->drawString(tempStr, centerX, centerY + 35);
+                        gfx->drawString(tempStr, centerX, centerY);
 
                         this->lastTemperature = this->outdoorTemperatureSensor->state;
                     }
                     this->lastTemperatureKnown = temperatureKnown;
+
+                    bool conditionKnown = this->hasWeatherCondition();
+                    if(conditionKnown){
+                        this->drawWeatherIcon(gfx, this->weatherConditionSensor->state, centerX, centerY + 50, 22);
+                        this->lastCondition = this->weatherConditionSensor->state;
+                    } else {
+                        this->lastCondition = "";
+                    }
 
                     gfx->endWrite();
                     display.commit();
