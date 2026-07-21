@@ -11,7 +11,12 @@ esphome:
       - EEPROM
       - ArduinoJson
       - m5stack/M5Unified@0.1.14
-      - m5stack/M5Dial@1.0.2
+      # m5stack/M5Dial's library.json doesn't declare a dependency on
+      # M5Unified, so ESPHome's ESP-IDF backend never adds M5Unified to
+      # M5Dial's generated REQUIRES list and a cold build fails with
+      # "M5Unified.h: No such file or directory". Using a fork with that
+      # one field added until upstream fixes it.
+      - M5Dial=https://github.com/sodre90/M5Dial.git#1.0.2-esphome-deps-fix
       # M5GFX >=0.2.7 ships EPD panel code needing IDF's esp_lcd headers,
       # which ESPHome's arduino build does not expose
       - m5stack/M5GFX@0.2.6
