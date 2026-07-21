@@ -76,7 +76,7 @@ namespace esphome
 
                         // Icon
                         if(this->icon != nullptr){
-                            display.drawBitmapTransparent(this->icon, width/2-35, height/2-30, 70, 70, 0xFFFF);
+                            display.drawBitmapTransparent(this->icon, width/2-35, height/2-30, 70, 70, M5DialDisplay::THEME_BG);
                         }
 
                         // Device Name

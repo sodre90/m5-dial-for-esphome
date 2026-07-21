@@ -4,7 +4,7 @@
 #include "default_font_16px.h"
 #include "screensaver.h"
 
-#define FF_DEFAULT &default_font_16px
+#define FF_DEFAULT &fonts::FreeSans12pt7b
 
 
 /**
@@ -333,17 +333,16 @@ namespace esphome
                 }
 
                 void setFontByName(const std::string& name) {
-                    if (FONT_MAP.find(name) != FONT_MAP.end()) {
+                    if (strcmp(name.c_str(), "default")==0) {
+                        this->setFontName("default");
+                        getGfx()->setFont(FF_DEFAULT);
+                    } else if (FONT_MAP.find(name) != FONT_MAP.end()) {
                         this->setFontName(name);
+                        getGfx()->setFont(FONT_MAP[this->fontName]);
                     } else {
                         this->setFontName("default");
                         ESP_LOGE("DISPLAY", "Font '%s' not found, using default font: 'default'", name.c_str());
-                    }
-
-                    if(strcmp(name.c_str(), "default")==0){
                         getGfx()->setFont(FF_DEFAULT);
-                    } else {
-                        getGfx()->setFont(FONT_MAP[this->fontName]);
                     }
                 }
 
