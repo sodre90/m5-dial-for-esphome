@@ -15,6 +15,7 @@ namespace esphome
                 int longPressMs = 1500;
 
                 long oldPosition = 0;
+                int pendingDirection = 0;
                 bool longPress = false;
 
             public:
@@ -51,17 +52,30 @@ namespace esphome
                 */
                 void handleRotary(){
                     long newPosition = M5Dial.Encoder.read();
-                    if (newPosition != this->oldPosition) {
-                        if(newPosition > this->oldPosition){
-                            ESP_LOGI("DEVICE", "Rotary right");
-                            this->rotary_right_action();
-                        } else {
-                            ESP_LOGI("DEVICE", "Rotary left");
-                            this->rotary_left_action();
-                        }
-
-                        this->oldPosition = newPosition;
+                    if (newPosition == this->oldPosition) {
+                        return;
                     }
+
+                    int direction = newPosition > this->oldPosition ? 1 : -1;
+
+                    // Fast rotation can make the encoder ISR briefly misread a
+                    // spurious reversal; only act once the same direction is
+                    // seen on two consecutive polls.
+                    if (direction != this->pendingDirection) {
+                        this->pendingDirection = direction;
+                        return;
+                    }
+
+                    if(direction > 0){
+                        ESP_LOGI("DEVICE", "Rotary right");
+                        this->rotary_right_action();
+                    } else {
+                        ESP_LOGI("DEVICE", "Rotary left");
+                        this->rotary_left_action();
+                    }
+
+                    this->oldPosition = newPosition;
+                    this->pendingDirection = 0;
                 }
 
                /**
