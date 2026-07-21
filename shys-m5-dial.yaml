@@ -27,6 +27,7 @@ external_components:
       type: git
       url: https://github.com/sodre90/m5-dial-for-esphome/
       ref: main
+      refresh: 0s
     components: [shys_m5_dial]
 
 dashboard_import:
