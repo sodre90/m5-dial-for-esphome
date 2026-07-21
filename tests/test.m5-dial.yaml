@@ -54,9 +54,15 @@ sensor:
     id: outdoor_temperature
     entity_id: sensor.test_outdoor_temperature
 
+text_sensor:
+  - platform: homeassistant
+    id: weather_condition
+    entity_id: weather.test_weather
+
 shys_m5_dial:
   time_component: ha_time
   outdoor_temperature_sensor: outdoor_temperature
+  weather_condition_sensor: weather_condition
   screen_off_time: 30000
   long_press_duration: 1200
   send_value_delay: 1200

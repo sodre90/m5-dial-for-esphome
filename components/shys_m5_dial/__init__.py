@@ -5,7 +5,7 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 
 from esphome.const import CONF_ID, CONF_NAME
-from esphome.components import esp32, time, sensor
+from esphome.components import esp32, time, sensor, text_sensor
 
 
 # LIMITS
@@ -31,6 +31,7 @@ CONF_DISPLAY_ROTATE                   = "display_rotate"
 
 CONF_TIME_COMPONENT                   = "time_component"
 CONF_OUTDOOR_TEMPERATURE_SENSOR       = "outdoor_temperature_sensor"
+CONF_WEATHER_CONDITION_SENSOR         = "weather_condition_sensor"
 
 
 # ALLGEMEINE MODE PARAMETER
@@ -179,6 +180,7 @@ CONFIG_SCHEMA = cv.Schema({
     
     cv.Required(CONF_TIME_COMPONENT): cv.use_id(time),
     cv.Optional(CONF_OUTDOOR_TEMPERATURE_SENSOR): cv.use_id(sensor.Sensor),
+    cv.Optional(CONF_WEATHER_CONDITION_SENSOR): cv.use_id(text_sensor.TextSensor),
 
     cv.Optional(CONF_DEVICES, default=dict()): cv.All(dict({
     
@@ -356,6 +358,10 @@ async def to_code(config):
     if CONF_OUTDOOR_TEMPERATURE_SENSOR in config:
         outdoor_temperature_sensor = await cg.get_variable(config[CONF_OUTDOOR_TEMPERATURE_SENSOR])
         cg.add(var.setOutdoorTemperatureSensor(outdoor_temperature_sensor))
+
+    if CONF_WEATHER_CONDITION_SENSOR in config:
+        weather_condition_sensor = await cg.get_variable(config[CONF_WEATHER_CONDITION_SENSOR])
+        cg.add(var.setWeatherConditionSensor(weather_condition_sensor))
 
     if CONF_SCREENSAVER in config:
         screensaver = config[CONF_SCREENSAVER]
