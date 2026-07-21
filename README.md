@@ -1,9 +1,4 @@
-#### Language Selection:
-[![en](https://img.shields.io/badge/lang-en-red.svg)](README.md) 
-[![de](https://img.shields.io/badge/lang-de-blue.svg)](README.de.md)
-  
 # M5 Stack Dial Custom Component for ESPHome
-![image](https://github.com/SmartHome-yourself/.github/blob/main/profile/assets/m5-dial-screens.png)  
 More information about the [M5 Stack Dial](https://shop.m5stack.com/products/m5stack-dial-esp32-s3-smart-rotary-knob-w-1-28-round-touch-screen?ref=smarthomeyourself)
   
 This component turns the M5 Stack Dial into a universal remote control for Home Assistant.  
@@ -239,8 +234,17 @@ Specifies after how many milliseconds the display automatically turns off.
   
 **screensaver (optional)** *(Default: clock)*  
 Specifies whether a screensaver should be used or not.  
-*Valid values: clock, off*
-  
+*Valid values: clock, digital_clock, off*
+
+`digital_clock` shows a digital time readout instead of the analog clock face. If `outdoor_temperature_sensor` and/or `weather_condition_sensor` are set, it also shows the outdoor temperature and a weather condition icon below it.
+
+**outdoor_temperature_sensor (optional)**  
+The ID of a `sensor` providing the outdoor temperature, shown by the `digital_clock` screensaver.
+
+**weather_condition_sensor (optional)**  
+The ID of a `text_sensor` providing the current weather condition (e.g. Home Assistant's `weather.*` entity state), shown as an icon by the `digital_clock` screensaver.  
+*Recognized values: sunny, clear-night, partlycloudy, cloudy, pouring, rainy, hail, lightning, lightning-rainy, snowy, snowy-rainy, fog, windy, windy-variant, exceptional*
+
 **rotaryStepWidth (optional)** *(Default: 10)*  
 Specifies the general step width by which the value changes per step when using the rotary encoder.  
 The value set here applies to all modes where no different step width is specified.  
